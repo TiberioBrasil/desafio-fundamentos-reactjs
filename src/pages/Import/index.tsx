@@ -47,7 +47,7 @@ const Import: React.FC = () => {
   }
 
   function submitFile(files: File[]): void {
-    files.map((file) => {
+    files.forEach((file) => {
       const newFile: FileProps = {
         file,
         name: file.name,
