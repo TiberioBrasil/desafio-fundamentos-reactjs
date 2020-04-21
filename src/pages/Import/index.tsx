@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -25,23 +27,35 @@ const Import: React.FC = () => {
   async function handleUpload(): Promise<void> {
     const data = new FormData();
 
-    uploadedFiles.map((file) => data.append('file', file.file));
+    async function processArray(): Promise<void> {
+      for (const uploadedFile of uploadedFiles) {
+        data.append('file', uploadedFile.file);
 
-    try {
-      await api.post('/transactions/import', data);
-    } catch (err) {
-      console.log(err.response.error);
+        try {
+          await api.post('/transactions/import', data);
+        } catch (err) {
+          console.log(err.response.error);
+        }
+
+        data.delete('file');
+      }
     }
+
+    await processArray();
+
+    history.push('/');
   }
 
   function submitFile(files: File[]): void {
-    setUploadedFiles(
-      files.map((file) => ({
+    files.map((file) => {
+      const newFile: FileProps = {
         file,
         name: file.name,
         readableSize: filesize(file.size, { locale: 'pt-BR' }),
-      })),
-    );
+      };
+
+      setUploadedFiles([...uploadedFiles, newFile]);
+    });
   }
 
   return (
